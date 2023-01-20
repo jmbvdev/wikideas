@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { useSelector,useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import s from "../styles/search.module.css"
 import {TbSearch} from "react-icons/tb"
 import {useNavigate  } from "react-router-dom";
-import { refresh } from '../redux/actions';
+
 
 const SearchBar = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -11,7 +11,7 @@ const SearchBar = () => {
 
     const articles = useSelector((state) => state.articlesReducers.articles);
 const navigate= useNavigate()
-const dispatch= useDispatch()
+
 
     const handleChange = (event) => {
       setSearchTerm(event.target.value);
