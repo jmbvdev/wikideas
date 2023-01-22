@@ -124,10 +124,12 @@ const Create = () => {
       if (result.isConfirmed) {
         dispatch(createArticle(data));
         Swal.fire("Saved!", "", "success");
+        navigate("/articles");
       }
     
     });
-    window.location.reload();
+
+
   }
 
   return (
