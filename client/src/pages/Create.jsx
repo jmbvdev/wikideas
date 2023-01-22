@@ -125,8 +125,9 @@ const Create = () => {
         dispatch(createArticle(data));
         Swal.fire("Saved!", "", "success");
       }
-      window.location.reload();
+    
     });
+    window.location.reload();
   }
 
   return (
