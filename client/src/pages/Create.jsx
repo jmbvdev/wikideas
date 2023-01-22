@@ -9,6 +9,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { createArticle } from "../redux/actions";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
+import { useEffect } from "react";
+import { useState } from "react";
 
 const Create = () => {
   const {
@@ -17,10 +19,18 @@ const Create = () => {
     formState: { errors },
     setError,
   } = useForm();
-  const themes = useSelector((state) => state.articlesReducers.themes);
-
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const themes = useSelector((state) => state.articlesReducers.themes);
+  const[submited, setSubmited]=useState(false)
+  useEffect(()=>{
+  if (submited===true) {
+    window.location.reload();
+  }
+     
+
+  },[submited])
+
 
   const handleChange = (e, field, minRange, maxRange, validationType) => {
     const imageUrlRegex =
@@ -123,8 +133,8 @@ const Create = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         dispatch(createArticle(data));
+        setSubmited(true)
         Swal.fire("Saved!", "", "success");
-        navigate("/articles");
       }
     
     });
@@ -200,6 +210,8 @@ const Create = () => {
                 helperText={errors.image && errors.image.message}
               />
               <select name="" id="" className={s.select} {...register("theme")}>
+                
+                      
                 {themes &&
                   themes.map((t) => (
                     <option
