@@ -1,203 +1,220 @@
-import React, {  useState } from "react";
-import { IoIosArrowBack } from 'react-icons/io';
-import s from "../styles/create.module.css"
+import React from "react";
+import { IoIosArrowBack } from "react-icons/io";
+import s from "../styles/create.module.css";
 import { useNavigate } from "react-router-dom";
-import create from "../images/create.webp"
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
+import create from "../images/create.webp";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
 import { useDispatch, useSelector } from "react-redux";
 import { createArticle } from "../redux/actions";
-import Swal from 'sweetalert2'
-
+import { useForm } from "react-hook-form";
+import Swal from "sweetalert2";
 
 const Create = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm();
+  const themes = useSelector((state) => state.articlesReducers.themes);
 
-    const navigate = useNavigate();
-    const dispatch= useDispatch()
-    
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-    const[title,setTitle]=useState("")
-    const [errorTitle, setErrorTitle] = useState(false);
+  const handleChange = (e, field, minRange, maxRange, validationType) => {
+    const imageUrlRegex =
+      /^https?:\/\/.*\/.*\.(png|gif|webp|jpeg|jpg)\??.*$/gim;
+    const { value } = e.target;
+    let error = null;
 
-    const[content,setContent]=useState("")
-    const [errorContent, setErrorContent] = useState(false);
-
-
-    const[image,setImage]=useState("")
-    const [errorImage, setErrorImage] = useState(false);
-  
-
-    const[categories, setCategories]=useState("all")
-    const themes = useSelector((state)=>state.articlesReducers.themes)
-
-    
-  
-
-    const handleTitle = (e) => {
-      e.preventDefault()
-      setTitle(e.target.value)
-      const inputValue=e.target.value
-      if (inputValue.length>=4 && inputValue.length<=45) {
-          setErrorTitle(false)
-      }else{
-          setErrorTitle(true)
-      }
-  };
-  
-  const handleImage = (e) => {
-    e.preventDefault()
-    setImage(e.target.value)
-    const imageUrlRegex = /^https?:\/\/.*\/.*\.(png|gif|webp|jpeg|jpg)\??.*$/gim
-    if (!image.match(imageUrlRegex)) {
-        setErrorImage(false);
-    } else{
-        setErrorImage(true);
-    }
-};
-
-const handleContent = (e) => {
-  e.preventDefault()
-  setContent(e.target.value)
-  const inputValue=e.target.value
-  if (inputValue.length>=255 && inputValue.length<=1000) {
-      setErrorContent(false)
-  }else{
-      setErrorContent(true)
-  }
-};
-
-    const handleBack = () => {
-        navigate("/articles");
-        window.scrollTo(0, {behavior: 'smooth'})
+    if (validationType === "range" && value.length < minRange) {
+      error = {
+        type: "minRange",
+        message: `${field} must have at least ${minRange} characters`,
       };
-      function handleSelect(e) {
-       e.preventDefault()
-       setCategories(e.target.value)
-
-      }
-      function handleSubmit(e) {
-        e.preventDefault();
-        if(!title || !content || !image){
-            Swal.fire({
-              title: 'All fields are required',
-              icon:"error",
-            });
-            return;
-        }
-        if (errorTitle || errorContent || errorImage) {
-            Swal.fire({
-              title: 'Check your fields',
-              icon:"error",
-            });
-            return;
-        }
-        if (!image.match(/^https?:\/\/.*\/.*\.(png|gif|webp|jpeg|jpg)\??.*$/gim)) {
-          Swal.fire({
-            title: 'Enter a valid url image',
-            icon:"error",
-          });
-          return;
-      }
-        Swal.fire({
-          title: 'Are you sure you want to create this article?',
-          icon:"question",
-          showCancelButton: true,
-          confirmButtonText: 'Save',
-          denyButtonText: `Cancel`,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                let obj={title, text:content,image,theme:categories}
-                dispatch(createArticle(obj));
-                Swal.fire('Saved!', '', 'success')
-          
-           
-            } 
-        });
     }
+    if (validationType === "range" && value.length > maxRange) {
+      error = {
+        type: "maxRange",
+        message: `${field} must have at least ${maxRange} characters`,
+      };
+    }
+    if (validationType === "textRange" && value.length < minRange) {
+      error = {
+        type: "minRange",
+        message: `${field} must have at least ${minRange} characters`,
+      };
+    }
+    if (validationType === "textRange" && value.length > maxRange) {
+      error = {
+        type: "maxRange",
+        message: `${field} must have at least ${maxRange} characters`,
+      };
+    }
+    if (validationType === "imageUrl" && value.length === 0) {
+      error = {
+        type: "imageUrl",
+        message: `You must enter an ${field}`,
+      };
+    }
+    if (validationType === "imageUrl" && !value.match(imageUrlRegex)) {
+      error = {
+        type: "imageUrl",
+        message: `${field} is not a valid image url`,
+      };
+    }
+    if (validationType === "required" && value.length === 0) {
+      error = {
+        type: "required",
+        message: `You must select a ${field}`,
+      };
+    }
+    setError(field, error);
+  };
 
-    return (
-        <div className={s.container}>
-            <div className={s.button_container}>
+  const handleBack = () => {
+    navigate("/articles");
+    window.scrollTo(0, { behavior: "smooth" });
+  };
+
+  function onSubmit(data) {
+    console.log(data);
+    if (!data.title || !data.text || !data.image) {
+      Swal.fire({
+        title: "All fields are required",
+        icon: "error",
+      });
+      return;
+    }
+    if (!data.theme) {
+      Swal.fire({
+        title: "You must select a theme",
+        icon: "error",
+      });
+      return;
+    }
+    if (
+      errors.title?.message ||
+      errors.text?.message ||
+      errors.image?.message
+    ) {
+      Swal.fire({
+        title: "Check your fields",
+        icon: "error",
+      });
+      return;
+    }
+    if (
+      !data.image.match(/^https?:\/\/.*\/.*\.(png|gif|webp|jpeg|jpg)\??.*$/gim)
+    ) {
+      Swal.fire({
+        title: "Enter a valid url image",
+        icon: "error",
+      });
+      return;
+    }
+    Swal.fire({
+      title: "Are you sure you want to create this article?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Save",
+      denyButtonText: `Cancel`,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        dispatch(createArticle(data));
+        Swal.fire("Saved!", "", "success");
+      }
+      window.location.reload();
+    });
+  }
+
+  return (
+    <div className={s.container}>
+      <div className={s.button_container}>
         <button onClick={handleBack} className={s.back}>
           <IoIosArrowBack />
         </button>
       </div>
       <div className={s.wraper}>
-        <div className={s.left} style={{backgroundImage: `url(${create})`}}>
-
+        <div
+          className={s.left}
+          style={{ backgroundImage: `url(${create})` }}
+        ></div>
+        <div className={s.right}>
+          <form action="" className={s.form} onSubmit={handleSubmit(onSubmit)}>
+            <h4>Create article</h4>
+            <Box
+              sx={{
+                "& .MuiTextField-root": { m: 1, width: "100%" },
+              }}
+              autoComplete="on"
+            >
+              <TextField
+                inputProps={{
+                  ...register("title", {
+                    required: true,
+                  }),
+                  onChange: (e) => handleChange(e, "title", 4, 45, "range"),
+                }}
+                autoComplete="on"
+                id="filled-textarea"
+                label="Title"
+                placeholder="Title"
+                error={errors.title?.message ? true : false}
+                helperText={errors.title && errors.title.message}
+              />
+              <TextField
+                inputProps={{
+                  ...register("text", {
+                    required: true,
+                  }),
+                  onChange: (e) =>
+                    handleChange(e, "text", 255, 10000, "textRange"),
+                }}
+                autoComplete="on"
+                id="outlined-multiline-static"
+                label="Content"
+                multiline
+                rows={2}
+                placeholder="Content"
+                error={errors.text?.message ? true : false}
+                helperText={errors.text && errors.text.message}
+              />
+              <TextField
+                inputProps={{
+                  ...register("image", {
+                    required: true,
+                  }),
+                  onChange: (e) =>
+                    handleChange(e, "image", 255, 10000, "imageUrl"),
+                }}
+                autoComplete="on"
+                id="filled-textarea"
+                label="Image URL"
+                placeholder="Image URL"
+                error={errors.image?.message ? true : false}
+                helperText={errors.image && errors.image.message}
+              />
+              <select name="" id="" className={s.select} {...register("theme")}>
+                {themes &&
+                  themes.map((t) => (
+                    <option
+                      key={t?.idTheme}
+                      value={t?.theme}
+                      className={s.categories}
+                    >
+                      {t?.theme}
+                    </option>
+                  ))}
+              </select>
+            </Box>
+            <input type="submit" value="submit" className={s.create_btn} />
+          </form>
         </div>
-        <div className={s.right} >
-            <form action="" className={s.form}  onSubmit={(e) => handleSubmit(e)}  >
-                <h4>Create article</h4>
-                <Box
-              
-                 sx={{
-                   '& .MuiTextField-root': { m: 1, width: '100%' },
-                 }}
-                 noValidate
-                 autoComplete="on"
-                >
-                       <TextField                
-                       value={title}
-                       autoComplete="on"
-          id="filled-textarea"
-          label="Title"
-          placeholder="Title"
-          error={errorTitle}
-          helperText={errorTitle&& title.length<=4?"title must longer than 4 characters":title.length>=45?"title must lower than 45 characters":""}
-          onChange={(e)=>handleTitle(e)}
-        />
-            <TextField
-            autoComplete="on"
-            value={content}
-            id="outlined-multiline-static"
-            label="Content"
-            multiline
-            rows={2}
-            placeholder="Content"
-            error={errorContent}
-          helperText={errorContent&& content.length<=255?"content must longer than 255 characters":content.length>=1000?"content must lower than 1000 characters":""}
-          onChange={(e)=>handleContent(e)}
-        />
-        <TextField
-         autoComplete="on"
-        value={image}
-        id="filled-textarea"
-        label="Image URL"
-        placeholder="Image URL"
-        error={errorImage}
-          helperText={errorImage? "Enter a valid image url":""}
-          onChange={(e)=>handleImage(e)}
-        />
-         <select
-      
-           
-           name=""
-           id=""
-           className={s.select}
-           onChange={e=>handleSelect(e)}
-         >
-          <option value={categories}>CATEGORIES</option>
-             {themes&&themes.map((t) => (
-               <option key={t?.idTheme} value={t?.theme}>
-                 {t?.theme}
-               </option>
-             ))}
-         </select>
-
-                </Box>
-                <button className={s.create_btn} type="submit" >Create</button>
-               
-            </form>
-
-        </div>
-
-
       </div>
-
-   
-        </div>
-    );
+    </div>
+  );
 };
 
-export default(Create);
+export default Create;
