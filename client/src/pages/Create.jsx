@@ -133,7 +133,7 @@ const Create = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         dispatch(createArticle(data));
-        setSubmited(true)
+        setSubmited(!submited)
         Swal.fire("Saved!", "", "success");
       }
     
