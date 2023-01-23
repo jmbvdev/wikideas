@@ -34,7 +34,7 @@ const Create = () => {
 
   const handleChange = (e, field, minRange, maxRange, validationType) => {
     const imageUrlRegex =
-      /^https?:\/\/.*\/.*\.(png|gif|webp|jpeg|jpg)\??.*$/gim;
+    /^https?:\/\/.*\/.*\.(png|gif|webp|jpeg|jpg)\??.*$/gim;
     const { value } = e.target;
     let error = null;
 
@@ -90,23 +90,32 @@ const Create = () => {
 
   function onSubmit(data) {
     console.log(data);
-    if (!data.title || !data.text || !data.image) {
+  
+    if (data.title?.length<4||data.title?.length>45) {
       Swal.fire({
-        title: "All fields are required",
+        title: "You must write a valid title",
         icon: "error",
       });
       return;
     }
-    if (!data.theme) {
+    if (data.text?.length<255||data.text?.length>10000) {
+  
       Swal.fire({
-        title: "You must select a theme",
+        title: "You must write a valid text",
+        icon: "error",
+      });
+      return;
+    }
+    if (data.theme==="") {
+      Swal.fire({
+        title: "You must select a categorie",
         icon: "error",
       });
       return;
     }
     if (
-      errors.title?.message ||
-      errors.text?.message ||
+      errors.title?.message||
+      errors.text?.message||
       errors.image?.message
     ) {
       Swal.fire({
@@ -115,7 +124,7 @@ const Create = () => {
       });
       return;
     }
-    if (
+    if ( !data.image||
       !data.image.match(/^https?:\/\/.*\/.*\.(png|gif|webp|jpeg|jpg)\??.*$/gim)
     ) {
       Swal.fire({
